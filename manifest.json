@@ -1,0 +1,55 @@
+{
+  "name": "Virtual QR Code Input Device",
+  "short_name": "QR Scanner",
+  "version": "1.0.0",
+  "description": "虛擬QR Code輸入裝置。",
+  "content_scripts": [
+    {
+      "matches": [ "<all_urls>" ],
+      "js": [
+        "libs/grid.js",
+        "libs/version.js",
+        "libs/detector.js",
+        "libs/formatinf.js",
+        "libs/errorlevel.js",
+        "libs/bitmat.js",
+        "libs/datablock.js",
+        "libs/bmparser.js",
+        "libs/datamask.js",
+        "libs/rsdecoder.js",
+        "libs/gf256poly.js",
+        "libs/gf256.js",
+        "libs/decoder.js",
+        "libs/qrcode.js",
+        "libs/findpat.js",
+        "libs/alignpat.js",
+        "libs/databr.js",
+        "scripts/extensions.js",
+        "scripts/program.js"
+      ],
+      "css": [
+        "styles/main.css"
+      ]
+    }
+  ],
+  "background":{
+    "scripts":["scripts/background.js"]
+  },
+  "browser_action": {
+    "default_icon": "images/icon/icon_128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    "images/*",
+    "templates/*"
+  ],
+  "icons": {
+    "128": "images/icon/icon_128.png",
+    "256": "images/icon/icon_256.png",
+    "512": "images/icon/icon_512.png"
+  },
+  "manifest_version": 2
+}
