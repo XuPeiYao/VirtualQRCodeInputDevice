@@ -7,6 +7,8 @@
     {
       "matches": [ "<all_urls>" ],
       "js": [
+        "scripts/beep.js",
+        "libs/jquery-3.2.1.min.js",
         "libs/grid.js",
         "libs/version.js",
         "libs/detector.js",
@@ -33,7 +35,7 @@
     }
   ],
   "background":{
-    "scripts":["scripts/background.js"]
+    "page":"templates/background.html"
   },
   "browser_action": {
     "default_icon": "images/icon/icon_128.png"

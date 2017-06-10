@@ -7,65 +7,70 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 class Program {
-    /**
-     * 程式進入點
-     * @param args 參數
-     */
-    static main(...args) {
+    static hasTab(tab) {
+        return this.tabs.filter(x => x.id == tab.id).length > 0;
+    }
+    static addTab(tab) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.isRunning) {
-                document.getElementById("webCamViewer").remove();
-                this.webCamStream.getTracks()[0].stop();
-                this.isRunning = false;
-                clearInterval(this.intervalId);
-                return;
-            }
-            this.isRunning = true;
-            try {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
+            chrome.tabs.executeScript(tab.id, {
+                "file": "scripts/addViewer.js"
+            });
+            Program.tabs.push(tab);
+            chrome.runtime.onConnect.addListener((port) => __awaiter(this, void 0, void 0, function* () {
+                if (port.name != "webCamImage")
                     return;
-                this.webCamStream = yield navigator.mediaDevices.getUserMedia({ video: true });
-                var viewer = yield Program.getWebCamViewer();
-                document.body.appendChild(viewer);
-                viewer.onmousedown = () => { this.moveable = true; };
-                viewer.onmouseup = () => { this.moveable = false; };
-                viewer.onmouseleave = viewer.onmouseup;
-                viewer.onmousemove = (e) => {
-                    if (!this.moveable)
-                        return;
-                    viewer.style.right = parseInt(window.getComputedStyle(viewer).right) - e.movementX + "px";
-                    viewer.style.bottom = parseInt(window.getComputedStyle(viewer).bottom) - e.movementY + "px";
-                };
-                var video = document.getElementById("webCamViewer_video");
-                video.src = window.URL.createObjectURL(this.webCamStream);
-                video.play();
-                qrcode.callback = (code) => {
-                    console.log(code);
-                    console.log(document.activeElement.tagName);
-                    if (!document.activeElement || document.activeElement.tagName != "INPUT")
-                        return;
-                    document.activeElement.value = (document.activeElement.value || "") + code + '\n';
-                };
-                this.intervalId = setInterval(this.decodeQR, 100);
-            }
-            catch (e) {
-                this.isRunning = false;
+                Program.ports[tab.id] = port;
+                //port.postMessage({question: "Who's there?"});
+            }));
+            Program.startStream();
+        });
+    }
+    static removeTab(tab) {
+        return __awaiter(this, void 0, void 0, function* () {
+            chrome.tabs.executeScript(tab.id, {
+                "file": "scripts/removeViewer.js"
+            });
+            Program.tabs = Program.tabs.filter(x => x.id != tab.id);
+            Program.ports[tab.id] = undefined;
+            yield Program.stopStream();
+        });
+    }
+    static stopStream() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Program.tabs.length == 0) {
+                Program.webCamStream.getTracks()[0].stop();
+                Program.webCamStream = null;
+                clearInterval(Program.timer);
+                Program.timer = null;
             }
         });
     }
-    static decodeQR() {
-        var canvas_video = document.getElementById("qr-canvas");
-        var canvas_video_context = canvas_video.getContext("2d");
-        canvas_video_context.drawImage(document.getElementById("webCamViewer_video"), 0, 0, 400, 300);
-        try {
-            qrcode.decode();
-        }
-        catch (e) { }
+    static startStream() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Program.timer)
+                return;
+            var video = document.createElement("video");
+            document.body.appendChild(video);
+            var canvas = document.createElement("canvas");
+            document.body.appendChild(canvas);
+            video.src = URL.createObjectURL(yield Program.getWebCamStream());
+            video.play();
+            canvas.width = 400;
+            canvas.height = 300;
+            Program.timer = setInterval(() => {
+                canvas.getContext('2d').drawImage(video, 0, 0, 400, 300);
+                var dataUrl = canvas.toDataURL();
+                for (var id in Program.ports) {
+                    if (!Program.ports[id])
+                        continue;
+                    Program.ports[id].postMessage({
+                        dataUrl: dataUrl
+                    });
+                }
+            }, 200, true);
+        });
     }
-    /**
-     * 取得網路攝影機視窗樣板
-     */
-    static getWebCamViewer() {
+    static getViewer() {
         return new Promise((res, rej) => {
             var request = new XMLHttpRequest();
             request.open("GET", chrome.extension.getURL("templates/webCamViewer.html"), true);
@@ -75,10 +80,15 @@ class Program {
             request.send();
         });
     }
+    static getWebCamStream() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!Program.webCamStream) {
+                Program.webCamStream = yield navigator.mediaDevices.getUserMedia({ video: true });
+            }
+            return Program.webCamStream;
+        });
+    }
 }
-/**
- * 是否執行中
- */
-Program.isRunning = false;
-Program.moveable = false;
+Program.tabs = [];
+Program.ports = {};
 //# sourceMappingURL=program.js.map
