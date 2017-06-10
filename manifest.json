@@ -1,7 +1,7 @@
 {
   "name": "虛擬QRCode輸入裝置",
   "short_name": "QR Scanner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "虛擬QR Code輸入裝置。",
   "content_scripts": [
     {
