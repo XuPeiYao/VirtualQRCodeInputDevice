@@ -31,4 +31,16 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => __awaiter(this, void 0, voi
         yield Program.addTab(tab);
     }
 }));
+chrome.tabs.onRemoved.addListener((id) => __awaiter(this, void 0, void 0, function* () {
+    if (Program.hasTabId(id)) {
+        yield Program.removeTabId(id);
+        yield Program.addTabId(id);
+    }
+}));
+chrome.tabs.onUpdated.addListener((id, info, tab) => __awaiter(this, void 0, void 0, function* () {
+    if (Program.hasTab(tab) && info.status) {
+        yield Program.removeTab(tab);
+        yield Program.addTab(tab);
+    }
+}));
 //# sourceMappingURL=background.js.map

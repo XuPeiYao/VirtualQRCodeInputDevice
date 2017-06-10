@@ -10,6 +10,9 @@ class Program {
     static hasTab(tab) {
         return this.tabs.filter(x => x.id == tab.id).length > 0;
     }
+    static hasTabId(id) {
+        return this.tabs.filter(x => x.id == id).length > 0;
+    }
     static addTab(tab) {
         return __awaiter(this, void 0, void 0, function* () {
             chrome.tabs.executeScript(tab.id, {
@@ -25,6 +28,13 @@ class Program {
             Program.startStream();
         });
     }
+    static addTabId(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            chrome.tabs.get(id, (tab) => __awaiter(this, void 0, void 0, function* () {
+                yield Program.addTab(tab);
+            }));
+        });
+    }
     static removeTab(tab) {
         return __awaiter(this, void 0, void 0, function* () {
             chrome.tabs.executeScript(tab.id, {
@@ -32,6 +42,16 @@ class Program {
             });
             Program.tabs = Program.tabs.filter(x => x.id != tab.id);
             Program.ports[tab.id] = undefined;
+            yield Program.stopStream();
+        });
+    }
+    static removeTabId(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            chrome.tabs.executeScript(id, {
+                "file": "scripts/removeViewer.js"
+            });
+            Program.tabs = Program.tabs.filter(x => x.id != id);
+            Program.ports[id] = undefined;
             yield Program.stopStream();
         });
     }

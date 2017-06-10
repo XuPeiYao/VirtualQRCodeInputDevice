@@ -22,3 +22,17 @@ chrome.tabs.onUpdated.addListener(async(id,info,tab)=>{
         await Program.addTab(tab);
     }
 })
+
+chrome.tabs.onRemoved.addListener(async(id)=>{
+    if(Program.hasTabId(id)){
+        await Program.removeTabId(id);
+        await Program.addTabId(id);
+    }
+});
+
+chrome.tabs.onUpdated.addListener(async(id,info,tab)=>{
+    if(Program.hasTab(tab) && info.status){
+        await Program.removeTab(tab);
+        await Program.addTab(tab);
+    }
+})

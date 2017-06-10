@@ -6,6 +6,10 @@ class Program{
     public static hasTab(tab):boolean{
         return this.tabs.filter(x=>x.id == tab.id).length > 0;
     }
+
+    public static hasTabId(id):boolean{
+        return this.tabs.filter(x=>x.id == id).length > 0;
+    }
     public static async addTab(tab):Promise<void>{
         chrome.tabs.executeScript(tab.id, {
             "file":"scripts/addViewer.js"
@@ -20,12 +24,26 @@ class Program{
 
         Program.startStream();
     }
+    public static async addTabId(id):Promise<void>{
+        chrome.tabs.get(id,async (tab)=>{
+            await Program.addTab(tab);
+        });
+    }
     public static async removeTab(tab):Promise<void>{
         chrome.tabs.executeScript(tab.id, {
             "file":"scripts/removeViewer.js"
         });
         Program.tabs = Program.tabs.filter(x=>x.id != tab.id);
         Program.ports[tab.id] = undefined;
+        
+        await Program.stopStream();
+    }
+    public static async removeTabId(id):Promise<void>{
+        chrome.tabs.executeScript(id, {
+            "file":"scripts/removeViewer.js"
+        });
+        Program.tabs = Program.tabs.filter(x=>x.id !=id);
+        Program.ports[id] = undefined;
         
         await Program.stopStream();
     }
