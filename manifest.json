@@ -49,6 +49,7 @@
     "templates/*"
   ],
   "icons": {
+	"64": "images/icon/icon_64.png",
     "128": "images/icon/icon_128.png",
     "256": "images/icon/icon_256.png",
     "512": "images/icon/icon_512.png"
