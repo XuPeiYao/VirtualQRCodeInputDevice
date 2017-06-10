@@ -43,9 +43,6 @@ var locked;
         
         beep.play();
 
-        var e = $.Event( "keypress", { which: 13 } );
-        jQuery(input).trigger(e);
-        submitForm(input);
         function submitForm(ele : HTMLElement){
             if(ele.tagName=="FORM"){
                 (<HTMLFormElement>ele).submit();
