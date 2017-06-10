@@ -53,6 +53,8 @@ class Program{
             Program.webCamStream.getTracks()[0].stop();
             Program.webCamStream = null;
             clearInterval(Program.timer);
+            document.getElementsByTagName("video")[0].remove();
+            document.getElementsByTagName("canvas")[0].remove();
             Program.timer = null;
         }
     }
@@ -63,6 +65,7 @@ class Program{
         document.body.appendChild(video);
         
         var canvas: HTMLCanvasElement = document.createElement("canvas");
+        canvas.id = "qr-canvas";
         document.body.appendChild(canvas);
 
         video.src = URL.createObjectURL(await Program.getWebCamStream());
@@ -71,14 +74,26 @@ class Program{
         canvas.width = 400;
         canvas.height = 300;
 
+        qrcode.callback = (code)=>{
+            console.log(code);
+             for(var id in Program.ports){
+                 if(!Program.ports[id])continue; 
+                 Program.ports[id].postMessage({
+                     code: code
+                 });
+            }
+        }
         Program.timer = setInterval(()=>{
             canvas.getContext('2d').drawImage(video,0,0,400,300);
             var dataUrl = canvas.toDataURL();
             for(var id in Program.ports){
                  if(!Program.ports[id])continue;
+
                  Program.ports[id].postMessage({
                      dataUrl : dataUrl
                  });
+
+                 qrcode.decode();
             }
         },200,true);
         

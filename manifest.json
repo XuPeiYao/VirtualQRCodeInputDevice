@@ -7,26 +7,9 @@
     {
       "matches": [ "<all_urls>" ],
       "js": [
-        "scripts/beep.js",
-        "libs/grid.js",
-        "libs/version.js",
-        "libs/detector.js",
-        "libs/formatinf.js",
-        "libs/errorlevel.js",
-        "libs/bitmat.js",
-        "libs/datablock.js",
-        "libs/bmparser.js",
-        "libs/datamask.js",
-        "libs/rsdecoder.js",
-        "libs/gf256poly.js",
-        "libs/gf256.js",
-        "libs/decoder.js",
-        "libs/qrcode.js",
-        "libs/findpat.js",
-        "libs/alignpat.js",
-        "libs/databr.js",
         "scripts/extensions.js",
-        "scripts/program.js"
+        "scripts/program.js",
+        "scripts/beep.js"
       ],
       "css": [
         "styles/main.css"
