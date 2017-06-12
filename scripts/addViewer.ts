@@ -24,17 +24,17 @@ var locked;
 
         console.info("qrCode: " + code);
 
-        var input ;
+        var input : HTMLElement;
         if(document.activeElement && document.activeElement.tagName == "INPUT"){
             input = <HTMLInputElement>document.activeElement;
-            input.value =(input.value || "") + code;
+            (<any>input).value =((<any>input).value || "") + code;
         }else if(document.activeElement && document.activeElement.tagName == "IFRAME"){
             function findInput(a){
                 if(a.activeElement.tagName == "IFRAME"){
                     findInput(a.contentDocument)
                 }else if(a.activeElement.tagName == "INPUT"){
                     input = <HTMLInputElement>a.activeElement;
-                    input.value =(input.value || "") + code;
+                    (<any>input).value =((<any>input).value || "") + code;
                 }
             }
             findInput((<HTMLIFrameElement>document.activeElement).contentDocument);
@@ -44,45 +44,53 @@ var locked;
         
         beep.play();
 
-        var keyboardEvent = document.createEvent("KeyboardEvent");
-        var initMethod = typeof keyboardEvent.initKeyboardEvent !== 'undefined' ? "initKeyboardEvent" : "initKeyEvent";
-
-        keyboardEvent[initMethod](
-                        "keydown", // event type : keydown, keyup, keypress
-                            true,     // bubbles
-                            true,     // cancelable  
-                            window,   // viewArg: should be window  
-                            false,    // ctrlKeyArg  
-                            false,    // altKeyArg
-                            false,    // shiftKeyArg
-                            false,    // metaKeyArg
-                            40,       // keyCodeArg : unsigned long the virtual key code, else 0  
-                            0         // charCodeArgs : unsigned long the Unicode character associated with the depressed key, else 0
-        );
-        document.dispatchEvent(keyboardEvent); 
-
-        /* a better way */
 
         function fireKey(el,key){
+            function getXPathForElement(element) {
+                const idx = (sib, name) => sib 
+                    ? idx(sib.previousElementSibling, name||sib.localName) + (sib.localName == name)
+                    : 1;
+                const segs = elm => !elm || elm.nodeType !== 1 
+                    ? ['']
+                    : elm.id && document.querySelector(`#${elm.id}`) === elm
+                        ? [`id("${elm.id}")`]
+                        : [...segs(elm.parentNode), `${elm.localName.toLowerCase()}[${idx(elm)}]`];
+                return segs(element).join('/');
+            }
+
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            var code =`
+                function getElementByXpath(path) {
+                    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                }
                 var eventObj = document.createEvent("Events");
                 eventObj.initEvent("keydown", true, true);
-                eventObj['which'] = key; 
-                eventObj['keyCode'] = key;
-                el.dispatchEvent(eventObj);
+                eventObj['which'] = ${key}; 
+                eventObj['keyCode'] = ${key};
+                getElementByXpath('${getXPathForElement(el)}').dispatchEvent(eventObj);
+            `;
+            s.appendChild(document.createTextNode(code));
+            document.body.appendChild(s);
         } 
-
+        
         fireKey(input,13);
 
         function submitForm(ele : HTMLElement){
             if(ele.tagName=="FORM"){
-                (<HTMLFormElement>ele).submit();
+                window['p'] = ele;
+                console.log(ele);
+                var f = <HTMLFormElement>ele;
+                if((f.action && f.action.length) || f.onsubmit){
+                    (<HTMLFormElement>ele).submit();
+                }
                 return;
             }
             if(ele.parentNode){
                 submitForm(<HTMLElement>ele.parentNode);
             }
         }
-
+        
         submitForm(input);
     }
 

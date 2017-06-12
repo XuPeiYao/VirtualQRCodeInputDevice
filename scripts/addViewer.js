@@ -49,32 +49,42 @@ var locked;
             return;
         }
         beep.play();
-        var keyboardEvent = document.createEvent("KeyboardEvent");
-        var initMethod = typeof keyboardEvent.initKeyboardEvent !== 'undefined' ? "initKeyboardEvent" : "initKeyEvent";
-        keyboardEvent[initMethod]("keydown", // event type : keydown, keyup, keypress
-        true, // bubbles
-        true, // cancelable  
-        window, // viewArg: should be window  
-        false, // ctrlKeyArg  
-        false, // altKeyArg
-        false, // shiftKeyArg
-        false, // metaKeyArg
-        40, // keyCodeArg : unsigned long the virtual key code, else 0  
-        0 // charCodeArgs : unsigned long the Unicode character associated with the depressed key, else 0
-        );
-        document.dispatchEvent(keyboardEvent);
-        /* a better way */
         function fireKey(el, key) {
-            var eventObj = document.createEvent("Events");
-            eventObj.initEvent("keydown", true, true);
-            eventObj['which'] = key;
-            eventObj['keyCode'] = key;
-            el.dispatchEvent(eventObj);
+            function getXPathForElement(element) {
+                const idx = (sib, name) => sib
+                    ? idx(sib.previousElementSibling, name || sib.localName) + (sib.localName == name)
+                    : 1;
+                const segs = elm => !elm || elm.nodeType !== 1
+                    ? ['']
+                    : elm.id && document.querySelector(`#${elm.id}`) === elm
+                        ? [`id("${elm.id}")`]
+                        : [...segs(elm.parentNode), `${elm.localName.toLowerCase()}[${idx(elm)}]`];
+                return segs(element).join('/');
+            }
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            var code = `
+                function getElementByXpath(path) {
+                    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                }
+                var eventObj = document.createEvent("Events");
+                eventObj.initEvent("keydown", true, true);
+                eventObj['which'] = ${key}; 
+                eventObj['keyCode'] = ${key};
+                getElementByXpath('${getXPathForElement(el)}').dispatchEvent(eventObj);
+            `;
+            s.appendChild(document.createTextNode(code));
+            document.body.appendChild(s);
         }
         fireKey(input, 13);
         function submitForm(ele) {
             if (ele.tagName == "FORM") {
-                ele.submit();
+                window['p'] = ele;
+                console.log(ele);
+                var f = ele;
+                if ((f.action && f.action.length) || f.onsubmit) {
+                    ele.submit();
+                }
                 return;
             }
             if (ele.parentNode) {
