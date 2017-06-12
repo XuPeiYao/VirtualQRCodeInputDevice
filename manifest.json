@@ -1,8 +1,10 @@
 {
   "name": "虛擬QRCode輸入裝置",
   "short_name": "QR Scanner",
-  "version": "1.0.1",
+  "version": "1.0.2",
+  "version_name":"1.0 RC1",
   "description": "虛擬QR Code輸入裝置。",
+  "homepage_url": "https://github.com/XuPeiYao/VirtualQRCodeInputDevice",
   "content_scripts": [
     {
       "matches": [ "<all_urls>" ],
